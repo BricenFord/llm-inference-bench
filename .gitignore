@@ -1,11 +1,13 @@
-# Secrets
-secrets/local.env
+# Private configs
+secrets/*.config
 
 # Python
+.venv/
 __pycache__/
 *.pyc
-.venv/
 
-# Generated build artifacts & outputs
+# Build artifacts
 generated/
+
+# Runtime outputs (raw slurm logs)
 results/
