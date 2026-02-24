@@ -1,2 +1,11 @@
-# Ignore environment variables
-.env
+# Secrets
+secrets/local.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Generated build artifacts & outputs
+generated/
+results/

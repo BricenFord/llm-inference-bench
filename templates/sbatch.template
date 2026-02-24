@@ -1,0 +1,58 @@
+#!/bin/bash
+#SBATCH --partition={{PARTITION}}
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task={{CPUS_PER_TASK}}
+#SBATCH --mem={{MEM}}
+#SBATCH --job-name={{JOB_NAME}}
+#SBATCH --output={{OUTPUT_DIR}}/{{OUTPUT_PREFIX}}_%J_stdout.txt
+#SBATCH --error={{OUTPUT_DIR}}/{{OUTPUT_PREFIX}}_%J_stderr.txt
+#SBATCH --time={{TIME}}
+#SBATCH --mail-user={{MAIL_USER}}
+#SBATCH --mail-type={{MAIL_TYPE}}
+#SBATCH --chdir={{CHDIR}}
+
+
+head -n 20 /proc/cpuinfo
+grep "processor" /proc/cpuinfo |wc -l
+cat /proc/meminfo
+
+
+# Configuration
+CONTAINER_IMAGE="{{CONTAINER_IMAGE}}"
+INSTANCE_NAME="ollama-$USER"
+MODEL_PATH="{{MODEL_PATH}}"
+PORT={{PORT}}
+
+# Unset variables to avoid conflicts
+unset ROCR_VISIBLE_DEVICES
+
+# Start Apptainer instance with GPU and writable tempfs
+apptainer instance start \
+  --nv \
+  --writable-tmpfs \
+  --bind "$MODEL_PATH" \
+  "$CONTAINER_IMAGE" "$INSTANCE_NAME"
+
+# Start Ollama serve inside the container in the background
+apptainer exec instance://$INSTANCE_NAME \
+  bash -c "export OLLAMA_MODELS=$MODEL_PATH && ollama serve &"
+echo "🦙 Ollama is now serving at http://localhost:$PORT"
+
+sleep {{OLLAMA_STARTUP_SLEEP}}
+
+# list the available models
+apptainer exec instance://$INSTANCE_NAME \
+  bash -c "ollama list"
+
+module load {{MODULE_CUDA}}
+module load {{MODULE_PYTHON}}
+
+python -m venv .venv
+source .venv/bin/activate
+python --version
+pip install requests
+python {{CLIENT_SCRIPT}}
+
+# kill the ollama server
+apptainer instance stop ollama-$USER
