@@ -6,5 +6,5 @@ __pycache__/
 # Build artifacts
 generated/
 
-# Runtime outputs (raw slurm logs)
+# Runtime outputs
 results/

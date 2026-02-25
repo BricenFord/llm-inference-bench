@@ -1,0 +1,75 @@
+#!/bin/bash
+#SBATCH --partition={{PARTITION}}
+#SBATCH --nodes={{NODES}}
+#SBATCH --ntasks={{NTASKS}}
+#SBATCH --cpus-per-task={{CPUS_PER_TASK}}
+#SBATCH --mem={{MEM}}
+#SBATCH --job-name={{JOB_NAME}}
+#SBATCH --output={{STDOUT_FILE}}
+#SBATCH --error={{STDERR_FILE}}
+#SBATCH --time={{TIME}}
+#SBATCH --mail-user={{MAIL_USER}}
+#SBATCH --mail-type={{MAIL_TYPE}}
+#SBATCH --chdir={{CHDIR}}
+
+set -euo pipefail
+
+head -n 20 /proc/cpuinfo
+grep "processor" /proc/cpuinfo | wc -l
+cat /proc/meminfo
+
+# ---------- Configuration ----------
+CONTAINER_IMAGE="{{CONTAINER_IMAGE}}"
+MODEL_PATH="{{MODEL_PATH}}"
+PORT={{PORT}}
+STARTUP_SLEEP={{STARTUP_SLEEP}}
+
+VENV_DIR="{{VENV_DIR}}"
+REQ_FILE="{{REQUIREMENTS_FILE}}"
+CLIENT_SCRIPT="{{CLIENT_SCRIPT}}"
+
+# IMPORTANT: unique instance per user + per Slurm job to avoid collisions
+INSTANCE_NAME="ollama-${USER}-${SLURM_JOB_ID:-manual}"
+
+# Unset variables to avoid conflicts
+unset ROCR_VISIBLE_DEVICES
+
+# Ensure results dirs exist
+mkdir -p "{{STDOUT_DIR}}" "{{STDERR_DIR}}" "{{RUNS_DIR}}"
+
+cleanup() {
+  # Best-effort stop; don't fail the job if it's already stopped
+  apptainer instance stop "$INSTANCE_NAME" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+# Start Apptainer instance with GPU and writable tempfs
+apptainer instance start \
+  --nv \
+  --writable-tmpfs \
+  --bind "$MODEL_PATH" \
+  "$CONTAINER_IMAGE" "$INSTANCE_NAME"
+
+# Start Ollama serve inside the container in the background
+apptainer exec instance://$INSTANCE_NAME \
+  bash -c "export OLLAMA_MODELS=$MODEL_PATH && ollama serve &"
+echo "🦙 Ollama is now serving at http://localhost:$PORT"
+
+sleep "$STARTUP_SLEEP"
+
+# List the available models
+apptainer exec instance://$INSTANCE_NAME \
+  bash -c "ollama list"
+
+# Python environment + run client
+module load {{MODULE_CUDA}}
+module load {{MODULE_PYTHON}}
+
+python -m venv "$VENV_DIR"
+source "$VENV_DIR/bin/activate"
+python --version
+
+pip install --upgrade pip
+pip install -r "$REQ_FILE"
+
+python "$CLIENT_SCRIPT"

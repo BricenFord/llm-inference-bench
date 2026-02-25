@@ -1,0 +1,46 @@
+{
+  "models": [
+    "qwen3:30b",
+    "qwen3:235b",
+    "qwen3:8b",
+    "qwen3-coder:30b",
+    "llama3.1:8b"
+  ],
+
+  "slurm": {
+    "partition": "gpu",
+    "nodes": 1,
+    "ntasks": 1,
+    "cpus_per_task": 32,
+    "mem": "64G",
+    "time": "01:00:00",
+    "mail_user": "YYYY_TODO_CHANGE_ME_YYY@ou.edu",
+    "mail_type": "ALL",
+    "chdir": "./",
+    "stdout_dir": "results/logs",
+    "stderr_dir": "results/logs",
+    "runs_dir": "results/runs"
+  },
+
+  "engine": {
+    "name": "ollama",
+    "container_image": "",
+    "model_path": "",
+    "port": 11434,
+    "startup_sleep": 7,
+    "instance_prefix": "ollama"
+  },
+
+  "python": {
+    "module_cuda": "CUDA/12.1.1",
+    "module_python": "Python",
+    "venv_dir": ".venv",
+    "requirements_file": "requirements.txt"
+  },
+
+  "client": {
+    "host": "http://localhost:11434",
+    "csv_file": "questions.csv",
+    "timeout_s": 60
+  }
+}
