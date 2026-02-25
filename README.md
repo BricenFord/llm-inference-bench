@@ -93,7 +93,7 @@ Example:
 > scripts/ollama/build.py
 
 After running the build step, generated artifacts will appear under:
-> generated/<engine>/
+> generated/engine/
 
 Each model configuration results in a separate SBATCH job.
 
@@ -103,17 +103,21 @@ Each model configuration results in a separate SBATCH job.
 
 Use the submission script to dispatch all generated jobs:
 
-./run.sh
+> ./run.sh
 
 This submits each .sbatch file to the Slurm scheduler according to your configuration.
+
+---
 
 ### 6. Collect Results
 
 After completion, logs and benchmark outputs are written to:
 
-results/
-├── logs/   # stdout / stderr from Slurm jobs
+results/  
+├── logs/   # stdout / stderr from Slurm jobs  
 └── runs/   # benchmark metrics
+
+---
 
 ### 7. Analyze and Visualize Metrics (COMING SOON) !!!
 

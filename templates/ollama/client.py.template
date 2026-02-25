@@ -7,6 +7,7 @@ HOST = "{{HOST}}"
 MODEL_NAME = "{{MODEL_NAME}}"
 CSV_FILE = "{{CSV_FILE}}"
 TIMEOUT_S = {{TIMEOUT_S}}
+NUM_CTX = {{NUM_CTX}}
 
 def load_questions(file_path: str):
     questions = []
@@ -19,6 +20,8 @@ def load_questions(file_path: str):
 
 def ask_model(prompt: str):
     payload = {"model": MODEL_NAME, "prompt": prompt, "stream": False}
+    if NUM_CTX is not None:
+        payload["options"] = {"num_ctx": int(NUM_CTX)}
     start_time = time.time()
     try:
         resp = requests.post(f"{HOST}/api/generate", json=payload, timeout=TIMEOUT_S)

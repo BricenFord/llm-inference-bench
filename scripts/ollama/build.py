@@ -43,9 +43,10 @@ def main():
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Use posix-style relative paths for the generated scripts
-    # (works regardless of where the repo lives, as long as sbatch --chdir points to repo root)
     rel_out_dir = Path("generated") / "ollama"
+
+    num_ctx_cfg = clientcfg.get("num_ctx", None)
+    num_ctx_literal = "None" if num_ctx_cfg is None else str(int(num_ctx_cfg))
 
     for model in models:
         slug = slugify_model(model)
@@ -62,7 +63,6 @@ def main():
         sbatch_name = f"ollama_{slug}.sbatch"
 
         mapping_common = {
-            # SLURM
             "PARTITION": slurm["partition"],
             "NODES": slurm["nodes"],
             "NTASKS": slurm["ntasks"],
@@ -78,20 +78,14 @@ def main():
             "RUNS_DIR": slurm["runs_dir"],
             "STDOUT_FILE": stdout_file,
             "STDERR_FILE": stderr_file,
-
-            # Engine
             "CONTAINER_IMAGE": engine["container_image"],
             "MODEL_PATH": engine["model_path"],
             "PORT": engine["port"],
             "STARTUP_SLEEP": engine.get("startup_sleep", 7),
-
-            # Python env
             "MODULE_CUDA": pycfg["module_cuda"],
             "MODULE_PYTHON": pycfg["module_python"],
             "VENV_DIR": pycfg["venv_dir"],
             "REQUIREMENTS_FILE": pycfg["requirements_file"],
-
-            # Client script path relative to repo root (sbatch --chdir=./)
             "CLIENT_SCRIPT": str(rel_out_dir / client_script_name),
         }
 
@@ -102,6 +96,7 @@ def main():
             "MODEL_NAME": model,
             "CSV_FILE": clientcfg["csv_file"],
             "TIMEOUT_S": clientcfg.get("timeout_s", 60),
+            "NUM_CTX": num_ctx_literal,
         }
         client_text = render_template(client_template, client_mapping)
 
