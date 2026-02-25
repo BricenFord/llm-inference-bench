@@ -1,6 +1,3 @@
-# Private configs
-secrets/*.config
-
 # Python
 .venv/
 __pycache__/

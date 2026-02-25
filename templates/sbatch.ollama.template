@@ -1,0 +1,53 @@
+#!/bin/bash
+#SBATCH --partition={{PARTITION}}
+#SBATCH --nodes={{NODES}}
+#SBATCH --ntasks={{NTASKS}}
+#SBATCH --cpus-per-task={{CPUS_PER_TASK}}
+#SBATCH --mem={{MEM}}
+#SBATCH --job-name={{EXP_NAME}}
+#SBATCH --output={{LOGS_DIR}}/{{EXP_NAME}}_%J.out
+#SBATCH --error={{LOGS_DIR}}/{{EXP_NAME}}_%J.err
+#SBATCH --time={{TIME}}
+#SBATCH --mail-user={{MAIL_USER}}
+#SBATCH --mail-type={{MAIL_TYPE}}
+#SBATCH --chdir=./
+
+set -euo pipefail
+mkdir -p "{{RUNS_DIR}}" "{{LOGS_DIR}}"
+
+CONTAINER_IMAGE="{{CONTAINER_IMAGE}}"
+MODEL_PATH="{{MODEL_PATH}}"
+PORT="{{PORT}}"
+INSTANCE_NAME="{{INSTANCE_NAME_PREFIX}}-${USER}-${SLURM_JOB_ID}"
+
+cleanup() {
+  apptainer instance stop "${INSTANCE_NAME}" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+unset ROCR_VISIBLE_DEVICES
+
+apptainer instance start \
+  --nv \
+  --writable-tmpfs \
+  --bind "${MODEL_PATH}" \
+  "${CONTAINER_IMAGE}" "${INSTANCE_NAME}"
+
+apptainer exec instance://"${INSTANCE_NAME}" \
+  bash -c "export OLLAMA_MODELS='${MODEL_PATH}' && ollama serve &"
+
+sleep "{{OLLAMA_STARTUP_SLEEP}}"
+
+module load "{{MODULE_CUDA}}"
+module load "{{MODULE_PYTHON}}"
+
+if [ ! -d "{{VENV_DIR}}" ]; then
+  python -m venv "{{VENV_DIR}}"
+fi
+source "{{VENV_DIR}}/bin/activate"
+
+pip install -q --upgrade pip
+pip install -q -r "{{REQUIREMENTS_FILE}}"
+
+RUN_FILE="{{RUNS_DIR}}/{{EXP_NAME}}_${SLURM_JOB_ID}.txt"
+python "{{CLIENT_PATH}}" > "${RUN_FILE}"
