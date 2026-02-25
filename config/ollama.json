@@ -16,7 +16,7 @@
     "time": "01:00:00",
     "mail_user": "YYYY_TODO_CHANGE_ME_YYY@ou.edu",
     "mail_type": "ALL",
-    "chdir": "./",
+    "chdir": "../..",
     "stdout_dir": "results/logs",
     "stderr_dir": "results/logs",
     "runs_dir": "results/runs"

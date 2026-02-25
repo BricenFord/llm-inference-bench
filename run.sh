@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
-# Configure per inference engine (e.g., ollama, ray, etc.)
+# Configure per inference engine (generated/)
 # Submits all generated SBATCH jobs for the selected engine.
 
 set -euo pipefail
 
-ENGINE_DIR="generated/ollama"
-
 mkdir -p results/runs results/logs
 
-shopt -s nullglob
+cd generated/ollama
 
-for f in "$ENGINE_DIR"/*.sbatch; do
+for f in *.sbatch; do
   echo "Submitting $f"
   sbatch "$f"
 done
