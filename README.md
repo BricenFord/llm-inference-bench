@@ -119,8 +119,6 @@ results/
 
 ---
 
-### 7. Analyze and Visualize Metrics (COMING SOON) !!!
+### 7. Analyze and Visualize Metrics
 
-Once runs complete, use plot_metrics.py to generate throughput and latency comparisons:
-
-python plot_metrics.py results/
+Once runs complete, use plot_metrics.py to generate throughput and latency comparisons
