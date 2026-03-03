@@ -1,5 +1,5 @@
 # HOW TO USE:
-# python3 plot_metrics.py results/logs/(file)
+# python3 plot_metrics_file.py results/logs/(file)
 
 #!/usr/bin/env python3
 
