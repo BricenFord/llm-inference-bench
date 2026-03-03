@@ -26,6 +26,7 @@ METRIC_PATTERN = re.compile(
 LABEL_RE = re.compile(r"^(?P<prefix>.+?)_(?P<params>[^_]+)_(?:\d+)_stdout$", re.IGNORECASE)
 
 
+# Parse a stdout metrics file into aligned index/latency/throughput arrays.
 def parse_metrics(file_path: Path):
     indices, latencies, throughputs = [], [], []
     with open(file_path, "r", encoding="utf-8", errors="replace") as f:
@@ -38,6 +39,7 @@ def parse_metrics(file_path: Path):
     return indices, latencies, throughputs
 
 
+# Derive a run label from a filename by dropping the job id and _stdout suffix when present.
 def label_from_file(file_path: Path) -> str:
     stem = file_path.stem
     m = LABEL_RE.match(stem)
@@ -46,6 +48,7 @@ def label_from_file(file_path: Path) -> str:
     return re.sub(r"_(?:\d+)_stdout$", "", stem, flags=re.IGNORECASE)
 
 
+# Generate a list of visually separated colors using golden-ratio hue stepping in HLS space.
 def color_cycle(n: int):
     golden_ratio = 0.618033988749895
     hue = 0.0
@@ -57,6 +60,7 @@ def color_cycle(n: int):
     return colors
 
 
+# Render a right-side panel of color-matched metric summary boxes for each run.
 def add_box_panel(ax, title: str, items, max_items: int):
     ax.set_axis_off()
     ax.set_title(title, loc="left", fontsize=10, pad=6)
@@ -83,6 +87,7 @@ def add_box_panel(ax, title: str, items, max_items: int):
         y -= dy
 
 
+# Load all matching stdout files, plot per-run latency/throughput, and show/save with mean summary panels.
 def plot_directory(dir_path: Path, pattern: str, out_path: Path | None, top_n: int, panel_limit: int):
     files = sorted(dir_path.glob(pattern))
     if not files:
@@ -155,6 +160,7 @@ def plot_directory(dir_path: Path, pattern: str, out_path: Path | None, top_n: i
         plt.show()
 
 
+# Parse CLI args, resolve paths, and invoke directory plotting.
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("directory", type=str, help="Directory containing *_stdout.txt files")

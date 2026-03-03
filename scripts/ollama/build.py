@@ -10,6 +10,7 @@ SBATCH_TEMPLATE_PATH = ROOT / "templates" / "ollama" / "job.sbatch.template"
 CLIENT_TEMPLATE_PATH = ROOT / "templates" / "ollama" / "client.py.template"
 OUT_DIR = ROOT / "generated" / "ollama"
 
+# Normalize a model name into a filesystem-safe lowercase slug.
 def slugify_model(model: str) -> str:
     s = model.strip()
     s = s.replace(":", "_").replace("/", "_")
@@ -17,6 +18,7 @@ def slugify_model(model: str) -> str:
     s = re.sub(r"_+", "_", s).strip("_")
     return s.lower()
 
+# Render a template by replacing {{KEY}} placeholders and fail if any remain.
 def render_template(template_text: str, mapping: dict) -> str:
     out = template_text
     for k, v in mapping.items():
@@ -26,6 +28,7 @@ def render_template(template_text: str, mapping: dict) -> str:
         raise RuntimeError(f"Unrendered template keys found: {sorted(set(leftover))}")
     return out
 
+# Load config, generate per-model SBATCH and client scripts from templates, and write them to generated/ollama.
 def main():
     cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 

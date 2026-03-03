@@ -10,6 +10,7 @@ from pathlib import Path
 
 JOB_DIR = ""
 
+# Parse stdout file and extract question index, latency, and throughput triples.
 def parse_metrics(file_path):
     indices, latencies, throughputs = [], [], []
     pattern = re.compile(r"(\d+),\s*([0-9]*\.?[0-9]+(?:[eE][-+]?\d+)?)\s*s,\s*([0-9]*\.?[0-9]+(?:[eE][-+]?\d+)?)\s*q/s,")
@@ -24,6 +25,7 @@ def parse_metrics(file_path):
 
     return indices, latencies, throughputs
 
+# Plot latency and throughput on dual y-axes with mean lines and annotations.
 def plot_metrics(indices, latencies, throughputs, title_suffix=""):
     fig, ax1 = plt.subplots(figsize=(12, 6))
 
@@ -79,6 +81,7 @@ def plot_metrics(indices, latencies, throughputs, title_suffix=""):
     plt.title(f"Ollama Latency and Throughput {title_suffix}".strip())
     plt.show()
 
+# Resolve input path, validate file, parse metrics, and invoke plotting.
 def main():
     if len(sys.argv) < 2:
         print("Usage: python plot_metrics.py <stdout_file_name_or_path>")
