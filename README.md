@@ -4,15 +4,11 @@ A benchmarking suite for evaluating **LLM inference performance** across differe
 
 ## Features
 
-- Benchmark multiple **server frameworks**:
-  - Ollama
-  - OllamaCPP
-  - vLLM
-  - Ray Serve
-- Evaluate **client-side concurrency** and load
-- Compare **different models** on inference performance
-- Measure **throughput**, **latency**, and other key metrics
-- Configurable experiments for both **server** and **client** parameters
+- Benchmark Ollama
+- Evaluate client-side concurrency and load
+- Compare different models on inference performance
+- Measure throughput, latency, and other key metrics
+- Configurable experiments for both server and client parameters
 
 ## Prerequisites
 
